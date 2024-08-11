@@ -1,6 +1,6 @@
 
 ## Instruction
-https://sysad.tech/vi/monitoring
+
 ## Install Agent
 ### Node-exporter on target
 
