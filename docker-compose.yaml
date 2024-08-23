@@ -4,12 +4,11 @@ networks:
   zbx_net:
   grafana-network:
   prometheus-network:
-#  influxdb-network:
+  influxdb-network:
 
 volumes:
-    prometheus_data:
-    influxdb-volume:
-
+  prometheus_data:
+  influxdb-volume:
 
 services:
 #----------GRAGANA DASHBOARD-------------------------------------------------
@@ -128,134 +127,135 @@ services:
     networks:
       - prometheus-network
 
-
  #--------mysql-server--------------------------------------
   mysql-server:
     image: mysql:8.0.30
     container_name: mysql-server
     networks:
-    - zbx_net
+      - zbx_net
     ports:
       - '3306:3306'
     command:
-    - mysqld
-    - --character-set-server=utf8
-    - --collation-server=utf8_bin
-    - --default-authentication-plugin=mysql_native_password
+      - mysqld
+      - --character-set-server=utf8
+      - --collation-server=utf8_bin
+      - --default-authentication-plugin=mysql_native_password
     environment:
-    - MYSQL_USER=$MYSQL_USER
-    - MYSQL_DATABASE=$MYSQL_DB
-    - MYSQL_PASSWORD=$MYSQL_PASS
-    - MYSQL_ROOT_PASSWORD=$MYSQL_PASS
-    - ZBX_JAVAGATEWAY=zabbix-java-gateway
+      - MYSQL_USER=$MYSQL_USER
+      - MYSQL_DATABASE=$MYSQL_DB
+      - MYSQL_PASSWORD=$MYSQL_PASS
+      - MYSQL_ROOT_PASSWORD=$MYSQL_PASS
+      - ZBX_JAVAGATEWAY=zabbix-java-gateway
     volumes:
-    - /zabbix-mysql:/var/lib/mysql:rw
+      - /zabbix-mysql:/var/lib/mysql:rw
     security_opt:
-     - seccomp:unconfined
+      - seccomp:unconfined
     restart: always
+
  #--------zabbix-server-mysql--------------------------------------
   zabbix-server-mysql:
     image: zabbix/zabbix-server-mysql:ubuntu-6.2-latest
     container_name: zabbix-server
     networks:
-    - zbx_net
+      - zbx_net
     ports:
-    - 10051:10051
+      - 10051:10051
     volumes:
-    - /etc/localtime:/etc/localtime:ro
-    - /etc/timezone:/etc/timezone:ro 
-    - /zabbix-data/alertscripts:/usr/lib/zabbix/alertscripts:ro
-    - /zabbix-data/externalscripts:/usr/lib/zabbix/externalscripts:ro
-    - /zabbix-data/export:/var/lib/zabbix/export:rw
-    - /zabbix-data/modules:/var/lib/zabbix/modules:ro
-    - /zabbix-data/enc:/var/lib/zabbix/enc:ro
-    - /zabbix-data/ssh_keys:/var/lib/zabbix/ssh_keys:ro
-    - /zabbix-data/mibs:/var/lib/zabbix/mibs:ro
-    - /zabbix-data/snmptraps:/var/lib/zabbix/snmptraps:rw
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro 
+      - /zabbix-data/alertscripts:/usr/lib/zabbix/alertscripts:ro
+      - /zabbix-data/externalscripts:/usr/lib/zabbix/externalscripts:ro
+      - /zabbix-data/export:/var/lib/zabbix/export:rw
+      - /zabbix-data/modules:/var/lib/zabbix/modules:ro
+      - /zabbix-data/enc:/var/lib/zabbix/enc:ro
+      - /zabbix-data/ssh_keys:/var/lib/zabbix/ssh_keys:ro
+      - /zabbix-data/mibs:/var/lib/zabbix/mibs:ro
+      - /zabbix-data/snmptraps:/var/lib/zabbix/snmptraps:rw
     environment:
-    - DB_SERVER_HOST=mysql-server
-    - MYSQL_USER=$MYSQL_USER
-    - MYSQL_DATABASE=$MYSQL_DB
-    - MYSQL_PASSWORD=$MYSQL_PASS
-    - MYSQL_ROOT_PASSWORD=$MYSQL_PASS
-    - ZBX_JAVAGATEWAY=zabbix-java-gateway
-
+      - DB_SERVER_HOST=mysql-server
+      - MYSQL_USER=$MYSQL_USER
+      - MYSQL_DATABASE=$MYSQL_DB
+      - MYSQL_PASSWORD=$MYSQL_PASS
+      - MYSQL_ROOT_PASSWORD=$MYSQL_PASS
+      - ZBX_JAVAGATEWAY=zabbix-java-gateway
     depends_on:
-    - mysql-server
+      - mysql-server
     restart: always
+
 #--------zabbix-web-nginx--------------------------------------
   zabbix-web-nginx-mysql:
     image: zabbix/zabbix-web-nginx-mysql:6.2-alpine-latest
     container_name: zabbix-web-nginx
     networks:
-    - zbx_net
+      - zbx_net
     ports:
-    - 8081:8080
-    - 8443:8443
+      - 8081:8080
+      - 8443:8443
     volumes:
-    - /etc/localtime:/etc/localtime:ro
-    - /etc/timezone:/etc/timezone:ro
-    - /zabbix-nginx/nginx:/etc/ssl/nginx:ro
-    - /zabbix-nginx/modules/:/usr/share/zabbix/modules/:ro
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - /zabbix-nginx/nginx:/etc/ssl/nginx:ro
+      - /zabbix-nginx/modules/:/usr/share/zabbix/modules/:ro
     environment:
-    - ZBX_SERVER_HOST=zabbix-server-mysql
-    - DB_SERVER_HOST=mysql-server
-    - MYSQL_USER=$MYSQL_USER
-    - MYSQL_DATABASE=$MYSQL_DB
-    - MYSQL_PASSWORD=$MYSQL_PASS
-    - MYSQL_ROOT_PASSWORD=$MYSQL_PASS
+      - ZBX_SERVER_HOST=zabbix-server-mysql
+      - DB_SERVER_HOST=mysql-server
+      - MYSQL_USER=$MYSQL_USER
+      - MYSQL_DATABASE=$MYSQL_DB
+      - MYSQL_PASSWORD=$MYSQL_PASS
+      - MYSQL_ROOT_PASSWORD=$MYSQL_PASS
     depends_on:
-    - mysql-server
-    - zabbix-server-mysql
+      - mysql-server
+      - zabbix-server-mysql
     restart: always
+
 #--------zabbix-java-gateway--------------------------------------
   zabbix-java-gateway:
     image: zabbix/zabbix-java-gateway:alpine-6.0-latest
     container_name: zabbix-java-gateway
     networks:
-    - zbx_net
+      - zbx_net
     ports:
-    - 10052:10052
+      - 10052:10052
     restart: always
 
 #--------INFLUXDB SERVICES--------------------------------------
- # influxDB
-   influxdb:
-     image: influxdb:1.8.10
-     container_name: influxdb
-     restart: always
-     hostname: influxdb
-     ports:
-       - 8086:8086
-       - 8089:8089/udp
-     networks:
-       - influxdb-network
-     volumes:
-       - influxdb-volume:/var/lib/influxdb
-     environment:
-       INFLUXDB_DB: $INFLUX_DB
-       INFLUXDB_USER: $INFLUXDB_USER
-       INFLUXDB_USER_PASSWORD: $INFLUXDB_USER_PASSWORD
+# influxDB
+  influxdb:
+    image: influxdb:1.8.10
+    container_name: influxdb
+    restart: always
+    hostname: influxdb
+    ports:
+      - 8086:8086
+      - 8089:8089/udp
+    networks:
+      - influxdb-network
+    volumes:
+      - influxdb-volume:/var/lib/influxdb
+    environment:
+      INFLUXDB_DB: $INFLUX_DB
+      INFLUXDB_USER: $INFLUXDB_USER
+      INFLUXDB_USER_PASSWORD: $INFLUXDB_USER_PASSWORD
 
-
-   telegraf:
-     image: telegraf:latest
-     container_name: telegraf
-     depends_on:
-       - influxdb
-     restart: always
-     networks:
-       - influxdb-network
-     ports:
-       - 8092:8092
-       - 8094:8094
-       - 8125:8125
-     environment:
-       - HOST_PROC=/host/proc
-       - HOST_SYS=/host/sys
-       - HOST_ETC=/host/etc
-     links:
-       - influxdb
-     tty: true
-     volumes:
-       - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf
+# telegraf
+  telegraf:
+    image: telegraf:latest
+    container_name: telegraf
+    depends_on:
+      - influxdb
+    restart: always
+    networks:
+      - influxdb-network
+    ports:
+      - 8092:8092
+      - 8094:8094
+      - 8125:8125
+    environment:
+      - HOST_PROC=/host/proc
+      - HOST_SYS=/host/sys
+      - HOST_ETC=/host/etc
+    links:
+      - influxdb
+    tty: true
+    volumes:
+      - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf
